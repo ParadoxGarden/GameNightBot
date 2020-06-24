@@ -1,0 +1,5 @@
+#Rename this file to bannedwords.txt to get functionality
+#BANNED WORD LIST
+idiot
+fool
+simpleton

@@ -1,0 +1,9 @@
+#Rename this file settings.txt for functionality
+#Split Char is "="
+
+#Token
+Token=$Token
+
+#Command prefix
+Prefix=>
+
