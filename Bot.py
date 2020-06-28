@@ -77,18 +77,21 @@ class MyClient(discord.Client):
                 return
         # check for actual commands being used
         if message.content[:len(prefix)] == prefix:
-            realContent = message.content[len(prefix):].lower().strip().split(" ")
-            if realContent[0] == 'help':
+            real_content = message.content[len(prefix):].lower().strip().split(" ")
+            if real_content[0] == 'help':
                 await message.delete()
                 await channel.send()
-            elif realContent[0] == 'clear':
+            elif real_content[0] == 'clear':
                 await message.delete()
-                messages = await channel.history(limit=int(realContent[1])).flatten()
+                messages = await channel.history(limit=int(real_content[1])).flatten()
                 await channel.delete_messages(messages)
-            elif realContent[0] == "react":
-                messageSent = await channel.send("Testing shit")
+            elif real_content[0] == "react":
+                message_sent = await channel.send("Testing shit")
                 for emoji in emoji_list:
-                    await messageSent.add_reaction(emoji)
+                    await message_sent.add_reaction(emoji)
+            elif real_content[0] == "dev":
+                for key in reactionData.keys():
+                    await channel.send(key + ":" + reactionData.get(key))
 
     async def on_reaction_add(self, reaction, user):
         if user.id == self.user.id:
