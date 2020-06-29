@@ -1,5 +1,9 @@
 #Rename this file settings.txt for functionality
-#Split Char is "="
+#replace anything with the $ character
+#Split Character is "="
+
+#Censoring?
+Censoring=0
 
 #Token
 Token=$Token
@@ -7,3 +11,7 @@ Token=$Token
 #Command prefix
 Prefix=>
 
+#Text To Speech
+Rate=125
+Volume=1.0
+Voice=0
