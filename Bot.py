@@ -4,6 +4,7 @@ import TTS
 
 bot_variables = dict()
 banned_words = list()
+
 reaction_user_data = dict()
 reaction_number_data = dict()
 
@@ -117,6 +118,7 @@ class MyClient(discord.Client):
 
             elif real_content[0] == "dev":
                 for key in reaction_user_data.keys():
+                    print("\n")
                     for emoji in reaction_user_data.get(key):
                         print(key.name + ":" + emoji.name)
 
@@ -143,7 +145,7 @@ class MyClient(discord.Client):
     async def on_reaction_add(self, reaction, user):
         if not reaction.message.author.id == self.user.id:
             return
-        if user.id == self.user.id:
+        elif user.id == self.user.id:
             return
         else:
             if user in reaction_user_data.keys():
@@ -154,6 +156,17 @@ class MyClient(discord.Client):
                     react_list.append(reaction.emoji)
             else:
                 reaction_user_data[user] = [reaction.emoji]
+            return
+
+    async def on_reaction_remove(self, reaction, user):
+        if not reaction.message.author.id == self.user.id:
+            return
+        elif user.id == self.user.id:
+            return
+        else:
+            if user in reaction_user_data.keys():
+                react_list = reaction_user_data.get(user)
+                react_list.remove(reaction.emoji)
             return
 
 def run_bot():
