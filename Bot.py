@@ -11,6 +11,11 @@ reaction_number_data = dict()
 voice_engine = TTS.init_voice()
 voice_client = None
 
+config_message = None
+editing_message = None
+
+display_emojis = list()
+
 
 def import_settings():
     settings = open("settings.txt", "r")
@@ -66,11 +71,13 @@ class MyClient(discord.Client):
         for channel in channels:
             if author in channel.members:
                 voice_client = await channel.connect()
+        print("Joining a channel")
 
     async def on_message(self, message):
         global voice_client
         global reaction_user_data
         global reaction_number_data
+        global config_message
         author = message.author
         content = message.content
         channel = message.channel
@@ -80,7 +87,7 @@ class MyClient(discord.Client):
         prefix = bot_variables.get("prefix")
 
         # we do not want the bot to reply to itself
-        if author.id == self.user.id:
+        if author.bot:
             return
         # check for banned words being used
         if bot_variables.get("censoring") == 1:
@@ -100,35 +107,61 @@ class MyClient(discord.Client):
 
             if real_content[0] == 'help':
                 await message.delete()
-                await channel.send()
-
+                message = await channel.send("do not step")
+                for emoji in guild.emojis:
+                    if emoji.name == "donot":
+                        await message.add_reaction(emoji)
             elif real_content[0] == 'clear':
                 await message.delete()
-                messages = await channel.history(limit=int(real_content[1])).flatten()
-                await channel.delete_messages(messages)
+                if len(real_content) > 1:
+                    messages = await channel.history(limit=int(real_content[1])).flatten()
+                    await channel.delete_messages(messages)
+                    print("Clearing" + real_content[1] + "messages")
+                else:
+                    messages = await channel.history(limit=10).flatten()
+                    await channel.delete_messages(messages)
+                    print("Clearing 10 messages")
 
             elif real_content[0] == "reset":
                 reaction_user_data = dict()
                 reaction_number_data = dict()
+                print("Resetting reaction data structures")
 
             elif real_content[0] == "react":
-                message_sent = await channel.send("Testing shit")
-                for emoji in emoji_list:
-                    await message_sent.add_reaction(emoji)
+                if display_emojis is not None:
+                    message_sent = await channel.send("Testing shit")
+                    for emoji in display_emojis:
+                        await message_sent.add_reaction(emoji)
+                    print("Testing reactions")
+                else:
+                    print("Configure First")
 
             elif real_content[0] == "dev":
+                for emoji in display_emojis:
+                    print(emoji.name)
                 for key in reaction_user_data.keys():
                     print("\n")
-                    for emoji in reaction_user_data.get(key):
-                        print(key.name + ":" + emoji.name)
+                    for sub_list in reaction_user_data[key]:
+                        print(sub_list)
 
             elif real_content[0] == "join":
                 await self.join_func(author, voice_channels)
+
+            elif real_content[0] == "config":
+                if config_message is None:
+                    message_sent = await channel.send("Testing shit")
+                    for emoji in emoji_list:
+                        await message_sent.add_reaction(emoji)
+                    print("Testing reactions")
+                    config_message = message_sent
+                else:
+                    print("already configured")
 
             elif real_content[0] in ["quit", "fuckoff", "kys", "end"]:
                 if voice_client is not None:
                     await voice_client.disconnect()
                 voice_client = None
+                print("Leaving voice channel")
 
             elif real_content[0] == "tts":
                 text = ' '.join(real_content[1:])
@@ -141,11 +174,14 @@ class MyClient(discord.Client):
                     await self.join_func(author, voice_channels)
                     player = discord.FFmpegPCMAudio(executable="C:/ffmpeg/bin/ffmpeg.exe", source="temp.mp3")
                     voice_client.play(player)
+                print("Playing tts message: " + text)
 
     async def on_reaction_add(self, reaction, user):
-        if not reaction.message.author.id == self.user.id:
+        if reaction.message == config_message:
+            display_emojis.append(reaction.emoji)
+            print(display_emojis)
             return
-        elif user.id == self.user.id:
+        if user.bot:
             return
         else:
             if user in reaction_user_data.keys():
@@ -153,21 +189,32 @@ class MyClient(discord.Client):
                 if len(react_list) == 3:
                     await reaction.remove(user)
                 else:
-                    react_list.append(reaction.emoji)
+                    react_list.append([len(react_list) + 1, reaction.emoji])
             else:
-                reaction_user_data[user] = [reaction.emoji]
+                reaction_user_data[user] = [[1, reaction.emoji]]
             return
 
     async def on_reaction_remove(self, reaction, user):
-        if not reaction.message.author.id == self.user.id:
-            return
-        elif user.id == self.user.id:
+        #  if reaction.author.user.id
+        if user.bot:
             return
         else:
             if user in reaction_user_data.keys():
                 react_list = reaction_user_data.get(user)
-                react_list.remove(reaction.emoji)
+                for sub_list in react_list:
+                    if reaction.emoji in sub_list:
+                        stated_list = sub_list
+                if stated_list[0] == 1:
+                    for sub_list in react_list:
+                        sub_list[0] = sub_list[0] - 1
+                    react_list.remove(stated_list)
+                elif stated_list[0] == 2:
+                    react_list[2][0] = 2
+                    react_list.remove(stated_list)
+                elif stated_list[0] == 3:
+                    react_list.remove(stated_list)
             return
+
 
 def run_bot():
     client = MyClient()

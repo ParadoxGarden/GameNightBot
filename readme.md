@@ -1,6 +1,6 @@
 #Game Night Bot
 
-uses many libaries, here are some links
+uses many libraries, here are some links
 
 [discord.py docs](https://discordpy.readthedocs.io/en/latest/index.html)
 
