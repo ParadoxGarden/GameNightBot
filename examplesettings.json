@@ -9,7 +9,7 @@
     "Voice": 0
   },
   "VoteEmojis": [
-    "$EMOJI-ID"
+    "$EMOJI-ID(INTEGER)"
   ],
   "BannedWords": [
     "$BANNED-WORD"

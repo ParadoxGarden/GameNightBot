@@ -28,6 +28,7 @@ class MyClient(discord.Client):
         self.voice_engine.setProperty('voice', voice_engine_voices[int(self.bot_variables['TTS']['Voice'])])
 
         for emoji in self.emojis:
+            print(emoji.id)
             if emoji.id in emoji_ids:
                 self.vote_emojis.append(emoji)
 
@@ -98,7 +99,7 @@ class MyClient(discord.Client):
             elif real_content[0] == "join":
                 await self.join_func(author, voice_channels)
 
-            elif real_content[0] in ["quit", "fuckoff", "kys", "end"]:
+            elif real_content[0] in ["quit", "fuckoff", "leave", "kys", "end"]:
                 if self.voice_client is not None:
                     await self.voice_client.disconnect()
                 self.voice_client = None
