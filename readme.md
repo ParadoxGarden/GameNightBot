@@ -1,6 +1,11 @@
 Game Night Bot
 =====
 
+replace anything in examplesettings.json with a $ in the line
+
+and rename it to settings.json and bot will function
+
+
 uses many libraries, here are some links
 
 [discord.py docs](https://discordpy.readthedocs.io/en/latest/index.html)

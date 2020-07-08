@@ -1,17 +1,17 @@
 {
   "ClientID": 369341552855613462,
-  "Censoring": 0,
+  "Censoring": 1,
   "Token": "$TOKEN",
-  "Command Prefix": "!",
+  "Prefix": "!",
   "TTS": {
     "Rate": 125,
     "Volume": 1.0,
     "Voice": 0
   },
-  "Vote Emojis": [
+  "VoteEmojis": [
     "$EMOJI-ID"
   ],
-  "Banned Words": [
+  "BannedWords": [
     "$BANNED-WORD"
   ]
 }
