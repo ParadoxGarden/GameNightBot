@@ -1,17 +1,22 @@
-vote_data = list()
-vote_data.append(dict())
-vote_data.append(dict())
+class Voting:
+    vote_data = dict()
+    vote_data["emojivotes"] = dict()
+    vote_data["useremojis"] = dict()
 
+    def add_vote(self, user, emoji):
+        useremojis = self.vote_data["useremojis"]
+        emojivotes = self.vote_data[""]
 
-def add_vote(self, user, emoji):
-    return
+    def clear_vote(self, user):
+        for emoji in self.vote_data["useremojis"].get(user):
+            return
 
 
 # invert number in list for vote
-def numerical_inverse(self, number):
-    if number is 1:
+def numerical_inverse(number):
+    if number == 1:
         return 3
-    elif number is 2:
+    elif number == 2:
         return 2
-    elif number is 3:
+    elif number == 3:
         return 1

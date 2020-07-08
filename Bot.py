@@ -3,6 +3,7 @@ import json
 import discord
 
 import TTS
+import Voting
 
 
 class MyClient(discord.Client):
@@ -11,6 +12,7 @@ class MyClient(discord.Client):
     bot_variables = None
     prefix = None
     vote_emojis = list()
+    vote = Voting.Voting()
 
     def initVars(self, filename):
         settings = open(filename, "r")
@@ -20,7 +22,7 @@ class MyClient(discord.Client):
     async def on_ready(self):
         self.prefix = self.bot_variables["Prefix"]
 
-        emoji_ids = self.bot_variables["VoteEmojis"]
+        emoji_names = self.bot_variables["VoteEmojis"]
 
         voice_engine_voices = self.voice_engine.getProperty("voices")
         self.voice_engine.setProperty('rate', int(self.bot_variables['TTS']['Rate']))
@@ -28,8 +30,7 @@ class MyClient(discord.Client):
         self.voice_engine.setProperty('voice', voice_engine_voices[int(self.bot_variables['TTS']['Voice'])])
 
         for emoji in self.emojis:
-            print(emoji.id)
-            if emoji.id in emoji_ids:
+            if emoji.name in emoji_names:
                 self.vote_emojis.append(emoji)
 
         print('------')
@@ -90,6 +91,7 @@ class MyClient(discord.Client):
                 message_sent = await channel.send("Testing shit")
                 for emoji in self.vote_emojis:
                     await message_sent.add_reaction(emoji)
+                await message_sent.add_reaction("🚫")
                 print("Testing reactions")
 
             elif real_content[0] == "dev":
@@ -124,8 +126,12 @@ class MyClient(discord.Client):
         if user.bot:
             return
         else:
-            return
-
+            if reaction.emoji == "🚫":
+                message = reaction.message
+                for react in message.reactions:
+                    await react.remove(user)
+            else:
+                return
     async def on_reaction_remove(self, reaction, user):
         #  if reaction.author.user.id
         if user.bot:
@@ -139,10 +145,5 @@ def run_bot():
     client.initVars("settings.json")
     client.run(client.bot_variables["Token"])
 
-
-def init():
-    run_bot()
-
-
 if __name__ == "__main__":
-    init()
+    run_bot()

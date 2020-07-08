@@ -1,7 +1,6 @@
 {
-  "ClientID": 369341552855613462,
   "Censoring": 1,
-  "Token": "$TOKEN",
+  "Token": "$TOKEN(STRING)",
   "Prefix": "!",
   "TTS": {
     "Rate": 125,
@@ -9,9 +8,9 @@
     "Voice": 0
   },
   "VoteEmojis": [
-    "$EMOJI-ID(INTEGER)"
+    "$EMOJI-NAME(STRING)"
   ],
   "BannedWords": [
-    "$BANNED-WORD"
+    "$BANNED-WORD(STRING)"
   ]
 }
