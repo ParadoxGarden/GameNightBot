@@ -7,8 +7,11 @@
     "Volume": 1.0,
     "Voice": 0
   },
-  "VoteEmojis": [
-    "$EMOJI-NAME(STRING)"
+  "Games": [
+    {
+      "Name": "$Longformname",
+      "Emoji": "$EmojiName"
+    }
   ],
   "BannedWords": [
     "$BANNED-WORD(STRING)"

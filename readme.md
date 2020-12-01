@@ -12,6 +12,8 @@ uses many libraries, here are some links
 
 [discord.py api guide](https://discordpy.readthedocs.io/en/latest/api.html)
 
+[schedule](https://schedule.readthedocs.io/en/stable/index.html)
+
 [pyttsx3](https://pyttsx3.readthedocs.io/en/latest/)
 
 [ffmpeg](https://ffmpeg.zeranoe.com/builds/)
