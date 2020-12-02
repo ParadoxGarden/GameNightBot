@@ -9,9 +9,11 @@ class Game():
         self.emoji = emoji
 
 class Vote():
-    def __init__(self, emoji, count):
+    def __init__(self, emoji, count, game):
         self.emoji = emoji
         self.count = count
+        self.game = game
+
 
 class MyClient(discord.Client):
     async def on_ready(self):
@@ -155,19 +157,17 @@ class MyClient(discord.Client):
         vmessage = await self.vchannel.fetch_message(self.vchannel.last_message_id)
         votes = list()
         for react in vmessage.reactions:
-            votes.append(Vote(react.emoji, react.count))
-        top = Vote(None, 0)
+            for game in self.games_list:
+                if game.emoji == react.emoji.name:
+                    votes.append(Vote(react.emoji, react.count, game))
+        top = Vote(None, 0, None)
         for vote in votes:
             if top.count < vote.count:
                 top = vote
-        for game in self.games_list:
-            if game.emoji == top.emoji.name:
-                winner = game
         
         print("Voting period ended")
         print(winner.name + " won")
-        await self.achannel.send("```**The game we will be playing tonight is *" + winner.name + "*!**```")
-
+        return [winner, votes]
 
     async def begin_voting_period(self): 
         self.vmessage = await self.vchannel.send("```Vote for what game you want to play next Monday by clicking on the emoji under this message!```")
