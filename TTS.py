@@ -4,12 +4,12 @@ import pyttsx3
 def init_voice():
     # SAPI5 for windows
     # espeak for ubuntu
-    engine = pyttsx3.init(driverName="sapi5")
+    engine = pyttsx3.init(driverName="espeak")
     return engine
 
 
 def voice_testing():
-    engine = pyttsx3.init(driverName="sapi5")  # object creation
+    engine = pyttsx3.init(driverName="espeak")  # object creation
 
     """ RATE"""
     rate = engine.getProperty('rate')  # current speaking rate
