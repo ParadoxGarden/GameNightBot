@@ -9,11 +9,11 @@
   },
   "Games": [
     {
-      "Name": "$LONGNAME",
-      "Emoji": "$EMOJINAME"
+      "Name": "$Longformname",
+      "Emoji": "$EmojiName"
     }
   ],
   "BannedWords": [
-    "$BANNEDWORD(STRING)"
+    "$BANNED-WORD(STRING)"
   ]
 }

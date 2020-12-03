@@ -160,14 +160,10 @@ class MyClient(discord.Client):
             for game in self.games_list:
                 if game.emoji == react.emoji.name:
                     votes.append(Vote(react.emoji, react.count, game))
-        top = Vote(None, 0, None)
-        for vote in votes:
-            if top.count < vote.count:
-                top = vote
         
-        print("Voting period ended")
-        print(winner.name + " won")
-        return [winner, votes]
+        print("Votes Collected")
+
+        return [votes]
 
     async def begin_voting_period(self): 
         self.vmessage = await self.vchannel.send("```Vote for what game you want to play next Monday by clicking on the emoji under this message!```")
@@ -176,8 +172,17 @@ class MyClient(discord.Client):
         
         print("Voting period started")
 
-    async def begin_game_night(self, game):
-        pass
+    async def begin_game_night(self):
+        votes = self.collate_votes()
+
+        top = Vote(None, 0, None)
+        for vote in votes:
+            if top.count < vote.count:
+                top = vote
+        print(top.game.name + " won the vote!")
+        print("With " + top.count + " votes!")
+        self.achannel.send(top.game.name + " won the vote!\n" + "With " + top.count + " votes!")
+        
 
 
 def run_bot():
