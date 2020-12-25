@@ -96,7 +96,7 @@ class MyClient(discord.Client):
                     await message.delete()
                     await channel.send("Bloop!", delete_after=5)
                     await author.send(
-                        "Sorry friend, you used a banned word, the message you sent was deleted. " +
+                        "Sorry friend, you used a banned word, the message you sent was deleted.\n" +
                         " if you feel this was done in error, please contact an administrator")
                     await author.send(
                         "the message that contained the word was: \"" + content + "\", the word was \"" + word + "\"")
@@ -163,7 +163,7 @@ class MyClient(discord.Client):
         
         print("Votes Collected")
 
-        return [votes]
+        return votes
 
     async def begin_voting_period(self): 
         self.vmessage = await self.vchannel.send("``` @everyone Vote for what game you want to play next Monday by clicking on the emoji under this message!```")
@@ -179,8 +179,8 @@ class MyClient(discord.Client):
         for vote in votes:
             if top.count < vote.count:
                 top = vote
-        print(top.game.name + " won the vote!")
-        print("With " + top.count + " votes!")
+        print(f"{top.game.name} won the vote!")
+        print(f"With {top.count} votes!")
         self.achannel.send(f"@everyone \n {top.game.name} won the vote!\n with {top.count} votes!")
         
 
