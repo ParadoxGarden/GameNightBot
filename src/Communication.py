@@ -1,6 +1,5 @@
 import discord
 import json
-import TTS
 import sys
 
 class MyClient(discord.Client):

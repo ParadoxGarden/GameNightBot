@@ -31,7 +31,7 @@ class MyClient(discord.Client):
                 self.guild = guild
         
 
-        for channel in self.guild.channels:
+        for channel in self.guild.channels: 
             if channel.name == "voting":
                 self.vchannel = channel
             elif channel.name == "announcements":
@@ -148,7 +148,7 @@ class MyClient(discord.Client):
                 print("Playing tts message: " + text)
 
     async def tts_play(self, text):
-        self.voice_engine.save_to_file(text, "temp.mp3")
+        self.voice_engine.save_to_file(text, "../temp.mp3")
         self.voice_engine.runAndWait()
         player = discord.FFmpegPCMAudio(source="temp.mp3")
         self.voice_client.play(player)
@@ -166,14 +166,14 @@ class MyClient(discord.Client):
         return [votes]
 
     async def begin_voting_period(self): 
-        self.vmessage = await self.vchannel.send("```Vote for what game you want to play next Monday by clicking on the emoji under this message!```")
+        self.vmessage = await self.vchannel.send("``` @everyone Vote for what game you want to play next Monday by clicking on the emoji under this message!```")
         for emoji in self.vote_emojis:
             await self.vmessage.add_reaction(emoji)
         
         print("Voting period started")
 
     async def begin_game_night(self):
-        votes = self.collate_votes()
+        votes = await self.collate_votes()
 
         top = Vote(None, 0, None)
         for vote in votes:
@@ -181,7 +181,7 @@ class MyClient(discord.Client):
                 top = vote
         print(top.game.name + " won the vote!")
         print("With " + top.count + " votes!")
-        self.achannel.send(top.game.name + " won the vote!\n" + "With " + top.count + " votes!")
+        self.achannel.send(f"@everyone \n {top.game.name} won the vote!\n with {top.count} votes!")
         
 
 
