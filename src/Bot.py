@@ -166,7 +166,7 @@ class MyClient(discord.Client):
         return votes
 
     async def begin_voting_period(self): 
-        self.vmessage = await self.vchannel.send("``` @everyone Vote for what game you want to play next Monday by clicking on the emoji under this message!```")
+        self.vmessage = await self.vchannel.send(" @everyone ```Vote for what game you want to play next Monday by clicking on the emoji under this message!```")
         for emoji in self.vote_emojis:
             await self.vmessage.add_reaction(emoji)
         

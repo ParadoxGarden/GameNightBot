@@ -1,0 +1,2 @@
+gamenightbot.sh: line 2: gamenight-env/bin/activate: No such file or directory
+python3: can't open file 'src/Bot.py': [Errno 2] No such file or directory
