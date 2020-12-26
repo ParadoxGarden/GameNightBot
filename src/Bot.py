@@ -181,7 +181,7 @@ class MyClient(discord.Client):
                 top = vote
         print(f"{top.game.name} won the vote!")
         print(f"With {top.count} votes!")
-        await self.achannel.send(f"@everyone \n {top.game.name} won the vote!\n with {top.count} votes!")
+        await self.achannel.send(f"@everyone \n {top.game.name} won the vote! with {top.count} votes!")
         
 
 
