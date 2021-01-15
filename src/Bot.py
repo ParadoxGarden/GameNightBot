@@ -1,12 +1,14 @@
 import json
 import discord
 import TTS
-
+import random
 
 class Game():
     def __init__(self, name, emoji, special=None):
         self.name = name
         self.emoji = emoji
+    def setEmoji(self, emoji):
+        self.real_emoji = emoji
 
 class Vote():
     def __init__(self, emoji, count, game):
@@ -51,6 +53,10 @@ class MyClient(discord.Client):
         for emoji in guild.emojis:
             if emoji.name in name_list:
                 self.vote_emojis.append(emoji)
+        for emoji in self.vote_emojis:
+            for game in self.games_list:
+                if emoji.name == game.emoji:
+                    game.setEmoji(emoji)
 
         # init voice engine
         voice_engine_voices = self.voice_engine.getProperty("voices")
@@ -79,10 +85,18 @@ class MyClient(discord.Client):
         author = message.author
 
         # we do not want the bot to reply to itself
+        # also arbitrary function execution 
         if author.bot:
             if message.channel is self.ichannel:
-                method = getattr(self, message.content.strip())
-                await method()
+                array = message.content.strip().split(" ")
+                method = getattr(self, array[0])
+                lenarray = len(array)
+                if lenarray == 1:
+                    await method()
+                elif lenarray == 2:
+                    await method(array[1])
+                elif lenarray == 3:
+                    await method(array[1], array[2])
             else:
                 pass
 
@@ -114,6 +128,13 @@ class MyClient(discord.Client):
 
             elif real_content[0] == 'ping':
                 await message.channel.send("pong")
+            
+            elif real_content[0] == 'games':
+                msg = "\nGames List\n"
+                for item in self.games_list:
+                    msg = msg + f"{item.name} : {item.real_emoji}\n"
+                msg = msg + ""
+                await message.channel.send(msg)
 
             elif real_content[0] == 'clear':
                 await message.delete()
@@ -127,8 +148,8 @@ class MyClient(discord.Client):
                     print("Clearing 10 messages")
 
             elif real_content[0] == "dev":
-                await self.begin_voting_period()
-
+                pass
+                
             elif real_content[0] == "join":
                 await self.join_func(author, voice_channels)
 
@@ -153,8 +174,14 @@ class MyClient(discord.Client):
         player = discord.FFmpegPCMAudio(source="temp.mp3")
         self.voice_client.play(player)
 
-    async def collate_votes(self):
+    async def collate_votes(self, chid=None, ch=None):
+        if chid is not None:
+            vmessage = await self.vchannel.fetch_message(chid)
+        else:
+            vmessage = await self.vchannel.fetch_message(self.vchannel.last_message_id)
+
         vmessage = await self.vchannel.fetch_message(self.vchannel.last_message_id)
+
         votes = list()
         for react in vmessage.reactions:
             for game in self.games_list:
@@ -165,23 +192,54 @@ class MyClient(discord.Client):
 
         return votes
 
-    async def begin_voting_period(self): 
+    async def begin_voting_period(self, channel): 
         self.vmessage = await self.vchannel.send(" @everyone ```Vote for what game you want to play next Monday by clicking on the emoji under this message!```")
         for emoji in self.vote_emojis:
             await self.vmessage.add_reaction(emoji)
         
         print("Voting period started")
 
-    async def begin_game_night(self):
-        votes = await self.collate_votes()
+    async def begin_game_night(self, channel=None, chid=None, winner=None):
+        if winner is not None:
+            top = winner
+            print(f"{winner.game.name} won the vote!")
+            print(f"With {winner.count} votes!")
+            msg = await self.achannel.send(f"@everyone \n {top.game.name} won the vote! with {top.count - 1} votes!\n Sign up for game night at 8PM tonight with the 👍 emoji below!")
+            await msg.add_reaction("👍")
+
+            pass
+        elif chid is not None:
+            votes = await self.collate_votes(chid=chid)
+        elif channel is not None:
+            votes = await self.collate_votes(ch=channel)
+        else:
+            votes = await self.collate_votes()
+        
+
 
         top = Vote(None, 0, None)
+        winners = []
         for vote in votes:
             if top.count < vote.count:
                 top = vote
-        print(f"{top.game.name} won the vote!")
-        print(f"With {top.count} votes!")
-        await self.achannel.send(f"@everyone \n {top.game.name} won the vote! with {top.count} votes!")
+        for vote in votes:
+            if top.count == vote.count:
+                winners.append(vote)
+        if len(winners) != 1:
+            ran = random.randint(0, len(winners))
+            winner = winners[ran]
+            print(f"random integer {ran} selected")
+            print(f"{winner.game.name} won the vote!")
+            print(f"With {winner.count} votes!")
+            msg = await self.achannel.send(f"@everyone \n random number {ran} was chosen to select: {top.game.name} as the game night winner! it had {top.count - 1} votes!\n Sign up for game night at 8PM tonight with the 👍 emoji below!")
+            await msg.add_reaction("👍")
+        else:
+            winner = winners[0]
+            print(f"{winner.game.name} won the vote!")
+            print(f"With {winner.count} votes!")
+            msg = await self.achannel.send(f"@everyone \n {top.game.name} won the vote! with {top.count - 1} votes!\n Sign up for game night at 8PM tonight with the 👍 emoji below!")
+            await msg.add_reaction("👍")
+        
         
 
 
