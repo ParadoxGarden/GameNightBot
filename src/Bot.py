@@ -122,6 +122,7 @@ class MyClient(discord.Client):
         voice_channels = guild.voice_channels
 
         # check for actual commands being used
+        # TODO: Strip all this out, redo into command pattern
         if message.content[:len(self.prefix)] == self.prefix:
             real_content = message.content[len(
                 self.prefix):].lower().strip().split(" ")
@@ -175,7 +176,7 @@ class MyClient(discord.Client):
         self.voice_engine.runAndWait()
         player = discord.FFmpegPCMAudio(source="temp/last_tts.mp3")
         self.voice_client.play(player)
-
+    #TODO: push to mongoDB results
     async def collate_votes(self, chid=None, ch=None):
         if chid is not None:
             vmessage = await self.vchannel.fetch_message(chid)
@@ -193,14 +194,14 @@ class MyClient(discord.Client):
         print("Votes Collected")
 
         return votes
-
+    #TODO: push message ID to mongo/write to disk for temporary storage
     async def begin_voting_period(self):
         self.vmessage = await self.vchannel.send(" @everyone ```Vote for what game you want to play next Monday by clicking on the emoji under this message!```")
         for emoji in self.vote_emojis:
             await self.vmessage.add_reaction(emoji)
 
         print("Voting period started")
-
+    #TODO: implement scheduler to run this automatically
     async def begin_game_night(self, channel=None, chid=None, winner=None):
         if winner is not None:
             top = winner
@@ -240,7 +241,7 @@ class MyClient(discord.Client):
             msg = await self.achannel.send(f"@everyone \n {top.game.name} won the vote! with {top.count - 1} votes!\n Sign up for game night at 8PM tonight with the 👍 emoji below!")
             await msg.add_reaction("👍")
 
-
+    #TODO: this should just be a development runner, make an actual start script
 def run_bot():
     client = MyClient()
     settings = open("settings.json", "r")
