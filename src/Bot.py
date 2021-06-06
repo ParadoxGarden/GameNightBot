@@ -3,12 +3,15 @@ import discord
 import TTS
 import random
 
+
 class Game():
     def __init__(self, name, emoji, special=None):
         self.name = name
         self.emoji = emoji
+
     def setEmoji(self, emoji):
         self.real_emoji = emoji
+
 
 class Vote():
     def __init__(self, emoji, count, game):
@@ -24,26 +27,25 @@ class MyClient(discord.Client):
         self.guild = None
         self.vmessage = None
         settings = open("settings.json", "r")
-        self.bot_variables = json.loads(settings.read())
+        self.botSettings = json.loads(settings.read())
         self.voice_engine = TTS.init_voice()
-        self.prefix = self.bot_variables["Prefix"]
+        self.prefix = self.botSettings["Prefix"]
         settings.close()
         for guild in self.guilds:
-            if guild.name == "Game Night":
+            if guild.name == self.botSettings["ServerName"]:
                 self.guild = guild
-        
 
-        for channel in self.guild.channels: 
-            if channel.name == "voting":
+        for channel in self.guild.channels:
+            if channel.name == self.botSettings["VoteChannel"]:
                 self.vchannel = channel
-            elif channel.name == "announcements":
+            elif channel.name == self.botSettings["AnnounceChannel"]:
                 self.achannel = channel
-            elif channel.name == "intra-bot-communication":
+            elif channel.name == self.botSettings["BotMessageChannel"]:
                 self.ichannel = channel
 
         # games we can play
         self.games_list = list()
-        for game in self.bot_variables.get("Games"):
+        for game in self.botSettings.get("Games"):
             self.games_list.append(Game(game.get("Name"), game.get("Emoji")))
         # emojis they use
         self.vote_emojis = list()
@@ -57,16 +59,16 @@ class MyClient(discord.Client):
             for game in self.games_list:
                 if emoji.name == game.emoji:
                     game.setEmoji(emoji)
-
+        # TEMP DISABLE TODO: redo for arm/linux
         # init voice engine
-        voice_engine_voices = self.voice_engine.getProperty("voices")
-        self.voice_engine.setProperty(
-            'rate', int(self.bot_variables['TTS']['Rate']))
-        self.voice_engine.setProperty('volume', float(
-            self.bot_variables['TTS']['Volume']))
-        self.voice_engine.setProperty(
-            'voice', voice_engine_voices[int(self.bot_variables['TTS']['Voice'])])
-        self.voice_client = guild.voice_client
+        #voice_engine_voices = self.voice_engine.getProperty("voices")
+        #self.voice_engine.setProperty(
+        #    'rate', int(self.botSettings['TTS']['Rate']))
+        #self.voice_engine.setProperty('volume', float(
+        #    self.botSettings['TTS']['Volume']))
+        #self.voice_engine.setProperty(
+        #    'voice', voice_engine_voices[int(self.botSettings['TTS']['Voice'])])
+        #self.voice_client = guild.voice_client
 
         # ensure the user knows we're running
         print('------')
@@ -75,7 +77,7 @@ class MyClient(discord.Client):
         print(self.user.id)
         print('------')
 
-    async def join_func(self, author, channels):
+    async def join(self, author, channels):
         for channel in channels:
             if author in channel.members:
                 self.voice_client = await channel.connect()
@@ -85,7 +87,7 @@ class MyClient(discord.Client):
         author = message.author
 
         # we do not want the bot to reply to itself
-        # also arbitrary function execution 
+        # also arbitrary function execution
         if author.bot:
             if message.channel is self.ichannel:
                 array = message.content.strip().split(" ")
@@ -104,8 +106,8 @@ class MyClient(discord.Client):
         channel = message.channel
 
         # check for banned words being used
-        if int(self.bot_variables["Censoring"]) == 1:
-            for word in self.bot_variables["BannedWords"]:
+        if int(self.botSettings["Censoring"]) == 1:
+            for word in self.botSettings["BannedWords"]:
                 if word.lower() in content.lower():
                     await message.delete()
                     await channel.send("Bloop!", delete_after=5)
@@ -128,7 +130,7 @@ class MyClient(discord.Client):
 
             elif real_content[0] == 'ping':
                 await message.channel.send("pong")
-            
+
             elif real_content[0] == 'games':
                 msg = "\nGames List\n"
                 for item in self.games_list:
@@ -149,9 +151,9 @@ class MyClient(discord.Client):
 
             elif real_content[0] == "dev":
                 pass
-                
+
             elif real_content[0] == "join":
-                await self.join_func(author, voice_channels)
+                await self.join(author, voice_channels)
 
             elif real_content[0] in ["quit", "fuck off" "fuckoff", "leave", "kys", "end"]:
                 if self.voice_client is not None:
@@ -159,19 +161,19 @@ class MyClient(discord.Client):
                 self.voice_client = None
                 print("Leaving voice channel")
 
-            elif real_content[0] == "tts":
-                text = ' '.join(real_content[1:])
-                if self.voice_client is not None:
-                    await self.tts_play(text)
-                else:
-                    await self.join_func(author, voice_channels)
-                    await self.tts_play(text)
-                print("Playing tts message: " + text)
+#            elif real_content[0] == "tts":
+#                text = ' '.join(real_content[1:])
+#                if self.voice_client is not None:
+#                    await self.tts_play(text)
+#                else:
+#                    await self.join_func(author, voice_channels)
+#                    await self.tts_play(text)
+#                print("Playing tts message: " + text)
 
     async def tts_play(self, text):
-        self.voice_engine.save_to_file(text, "../temp.mp3")
+        self.voice_engine.save_to_file(text, "temp/last_tts.mp3")
         self.voice_engine.runAndWait()
-        player = discord.FFmpegPCMAudio(source="temp.mp3")
+        player = discord.FFmpegPCMAudio(source="temp/last_tts.mp3")
         self.voice_client.play(player)
 
     async def collate_votes(self, chid=None, ch=None):
@@ -187,16 +189,16 @@ class MyClient(discord.Client):
             for game in self.games_list:
                 if game.emoji == react.emoji.name:
                     votes.append(Vote(react.emoji, react.count, game))
-        
+
         print("Votes Collected")
 
         return votes
 
-    async def begin_voting_period(self): 
+    async def begin_voting_period(self):
         self.vmessage = await self.vchannel.send(" @everyone ```Vote for what game you want to play next Monday by clicking on the emoji under this message!```")
         for emoji in self.vote_emojis:
             await self.vmessage.add_reaction(emoji)
-        
+
         print("Voting period started")
 
     async def begin_game_night(self, channel=None, chid=None, winner=None):
@@ -204,7 +206,7 @@ class MyClient(discord.Client):
             top = winner
             print(f"{winner.game.name} won the vote!")
             print(f"With {winner.count} votes!")
-            msg = await self.achannel.send(f"@everyone \n {top.game.name} won the vote! with {top.count - 1} votes!\n Sign up for game night at 8PM tonight with the 👍 emoji below!")
+            msg = await self.achannel.send(f"@everyone \n {top.game.name} won the vote! with {top.count - 1} votes!\n Sign up for game night at 8PM EST tonight with the 👍 emoji below!")
             await msg.add_reaction("👍")
 
             pass
@@ -214,8 +216,6 @@ class MyClient(discord.Client):
             votes = await self.collate_votes(ch=channel)
         else:
             votes = await self.collate_votes()
-        
-
 
         top = Vote(None, 0, None)
         winners = []
@@ -239,8 +239,6 @@ class MyClient(discord.Client):
             print(f"With {winner.count} votes!")
             msg = await self.achannel.send(f"@everyone \n {top.game.name} won the vote! with {top.count - 1} votes!\n Sign up for game night at 8PM tonight with the 👍 emoji below!")
             await msg.add_reaction("👍")
-        
-        
 
 
 def run_bot():
