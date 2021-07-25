@@ -1,6 +1,6 @@
 import json
 import discord
-import TTS
+import Commands
 import random
 
 
@@ -28,7 +28,7 @@ class MyClient(discord.Client):
         self.vmessage = None
         settings = open("settings.json", "r")
         self.botSettings = json.loads(settings.read())
-        self.voice_engine = TTS.init_voice()
+        #self.voice_engine = TTS.init_voice()
         self.prefix = self.botSettings["Prefix"]
         settings.close()
         for guild in self.guilds:
@@ -59,6 +59,7 @@ class MyClient(discord.Client):
             for game in self.games_list:
                 if emoji.name == game.emoji:
                     game.setEmoji(emoji)
+        self.commands = Commands.registerCommands()
         # TEMP DISABLE TODO: redo for arm/linux
         # init voice engine
         #voice_engine_voices = self.voice_engine.getProperty("voices")
@@ -88,19 +89,20 @@ class MyClient(discord.Client):
 
         # we do not want the bot to reply to itself
         # also arbitrary function execution
-        if author.bot:
-            if message.channel is self.ichannel:
-                array = message.content.strip().split(" ")
-                method = getattr(self, array[0])
-                lenarray = len(array)
-                if lenarray == 1:
-                    await method()
-                elif lenarray == 2:
-                    await method(array[1])
-                elif lenarray == 3:
-                    await method(array[1], array[2])
-            else:
-                pass
+        # TODO: replace this with proper scheduling pulled from settings.json
+        # if author.bot:
+        #     if message.channel is self.ichannel:
+        #         array = message.content.strip().split(" ")
+        #         method = getattr(self, array[0])
+        #         lenarray = len(array)
+        #         if lenarray == 1:
+        #             await method()
+        #         elif lenarray == 2:
+        #             await method(array[1])
+        #         elif lenarray == 3:
+        #             await method(array[1], array[2])
+        #     else:
+        #         pass
 
         content = message.content
         channel = message.channel
@@ -118,49 +120,17 @@ class MyClient(discord.Client):
                         "the message that contained the word was: \"" + content + "\", the word was \"" + word + "\"")
                     return
 
-        guild = message.guild
-        voice_channels = guild.voice_channels
 
         # check for actual commands being used
         # TODO: Strip all this out, redo into command pattern
         if message.content[:len(self.prefix)] == self.prefix:
-            real_content = message.content[len(
-                self.prefix):].lower().strip().split(" ")
-            if real_content[0] == 'help':
-                await message.delete()
-
-            elif real_content[0] == 'ping':
-                await message.channel.send("pong")
-
-            elif real_content[0] == 'games':
-                msg = "\nGames List\n"
-                for item in self.games_list:
-                    msg = msg + f"{item.name} : {item.real_emoji}\n"
-                msg = msg + ""
-                await message.channel.send(msg)
-
-            elif real_content[0] == 'clear':
-                await message.delete()
-                if len(real_content) > 1:
-                    messages = await channel.history(limit=int(real_content[1])).flatten()
-                    await channel.delete_messages(messages)
-                    print("Clearing" + real_content[1] + "messages")
-                else:
-                    messages = await channel.history(limit=10).flatten()
-                    await channel.delete_messages(messages)
-                    print("Clearing 10 messages")
-
-            elif real_content[0] == "dev":
-                pass
-
-            elif real_content[0] == "join":
-                await self.join(author, voice_channels)
-
-            elif real_content[0] in ["quit", "fuck off" "fuckoff", "leave", "kys", "end"]:
-                if self.voice_client is not None:
-                    await self.voice_client.disconnect()
-                self.voice_client = None
-                print("Leaving voice channel")
+            command = message.content[len(self.prefix):].lower().strip().split(" ")[0]
+            self.commands[command](message).execute()
+            # elif real_content[0] in ["quit", "fuck off" "fuckoff", "leave", "kys", "end"]:
+            #     if self.voice_client is not None:
+            #         await self.voice_client.disconnect()
+            #     self.voice_client = None
+            #     print("Leaving voice channel")
 
 #            elif real_content[0] == "tts":
 #                text = ' '.join(real_content[1:])
