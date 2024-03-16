@@ -1,18 +1,12 @@
 Game Night Bot
 =====
 
-### Warning: This bot was designed to run on a very specific setup be prepared to ask "why would anybody do it like that"
-
 
 For use:
 
 - Replace anything in examplesettings.json with a $ in the line
 
 - Rename it to settings.json
-
-- deploy on a raspberry pi running ubuntu server
-
-- cron job all the scripts to when you want functionality
 
 Communication.py allows for per channel messaging through the terminal in this format
 ```
